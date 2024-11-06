@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/containernetworking/cni/pkg/invoke"
 	"github.com/containernetworking/cni/pkg/types"
 	"github.com/containernetworking/cni/pkg/types/create"
@@ -422,6 +423,9 @@ func (c *CNIConfig) AddNetworkList(ctx context.Context, list *NetworkConfigList,
 		result, err = c.addNetwork(ctx, list.Name, list.CNIVersion, net, result, rt)
 		if err != nil {
 			return nil, fmt.Errorf("plugin %s failed (add): %w", pluginDescription(net.Network), err)
+		} else {
+			resultData, _ := json.Marshal(result)
+			logrus.Infof("rami plugin %s succeed: %s", pluginDescription(net.Network), resultData)
 		}
 	}
 
