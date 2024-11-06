@@ -22,7 +22,9 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"encoding/json"
 
+	"github.com/sirupsen/logrus"
 	cnilibrary "github.com/containernetworking/cni/libcni"
 	"github.com/containernetworking/cni/pkg/invoke"
 	"github.com/containernetworking/cni/pkg/types"
@@ -204,6 +206,8 @@ type asynchAttachResult struct {
 func asynchAttach(ctx context.Context, index int, n *Network, ns *Namespace, wg *sync.WaitGroup, rc chan asynchAttachResult) {
 	defer wg.Done()
 	r, err := n.Attach(ctx, ns)
+	data, _ := json.Marshal(r)
+	logrus.Infof("rami asynchAttach index=%d r=%s err=%v", index, string(data), err)
 	rc <- asynchAttachResult{index: index, res: r, err: err}
 }
 
