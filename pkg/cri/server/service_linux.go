@@ -17,13 +17,15 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/containerd/containerd/pkg/cap"
-	"github.com/containerd/containerd/pkg/userns"
 	cni "github.com/containerd/go-cni"
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/sirupsen/logrus"
+
+	"github.com/containerd/containerd/pkg/cap"
+	"github.com/containerd/containerd/pkg/userns"
 )
 
 // networkAttachCount is the minimum number of networks the PodSandbox
@@ -57,7 +59,7 @@ func (c *criService) initPlatform() (err error) {
 			pluginDirs[name] = conf.NetworkPluginConfDir
 		}
 	}
-
+	logrus.Infof("rami pluginDirs :%v", pluginDirs)
 	c.netPlugin = make(map[string]cni.CNI)
 	for name, dir := range pluginDirs {
 		max := c.config.NetworkPluginMaxConfNum
@@ -78,6 +80,11 @@ func (c *criService) initPlatform() (err error) {
 			return fmt.Errorf("failed to initialize cni: %w", err)
 		}
 		c.netPlugin[name] = i
+		confData, err := json.Marshal(i.GetConfig())
+		if err != nil {
+			return fmt.Errorf("failed to marshal plugin config: %w", err)
+		}
+		logrus.Infof("rami plugin config for %s: %s", name, string(confData))
 	}
 
 	if c.allCaps == nil {

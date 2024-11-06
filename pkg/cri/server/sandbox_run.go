@@ -440,6 +440,11 @@ func (c *criService) setupPodNetwork(ctx context.Context, sandbox *sandboxstore.
 	if netPlugin == nil {
 		return errors.New("cni config not initialized")
 	}
+	confData, err := json.Marshal(netPlugin.GetConfig())
+	if err != nil {
+		return err
+	}
+	log.G(ctx).Debugf("rami sandbox.RuntimeHandler=%s netPlugin %s", sandbox.RuntimeHandler, confData)
 
 	opts, err := cniNamespaceOpts(id, config)
 	if err != nil {
