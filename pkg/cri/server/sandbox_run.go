@@ -26,11 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/containerd/containerd"
-	containerdio "github.com/containerd/containerd/cio"
-	"github.com/containerd/containerd/errdefs"
-	"github.com/containerd/containerd/log"
-	"github.com/containerd/containerd/snapshots"
 	cni "github.com/containerd/go-cni"
 	"github.com/containerd/nri"
 	v1 "github.com/containerd/nri/types/v1"
@@ -40,6 +35,14 @@ import (
 	"golang.org/x/net/context"
 	runtime "k8s.io/cri-api/pkg/apis/runtime/v1"
 
+	"github.com/containerd/containerd"
+	containerdio "github.com/containerd/containerd/cio"
+	"github.com/containerd/containerd/errdefs"
+	"github.com/containerd/containerd/log"
+	"github.com/containerd/containerd/snapshots"
+
+	selinux "github.com/opencontainers/selinux/go-selinux"
+
 	"github.com/containerd/containerd/pkg/cri/annotations"
 	criconfig "github.com/containerd/containerd/pkg/cri/config"
 	customopts "github.com/containerd/containerd/pkg/cri/opts"
@@ -48,7 +51,6 @@ import (
 	"github.com/containerd/containerd/pkg/cri/util"
 	ctrdutil "github.com/containerd/containerd/pkg/cri/util"
 	"github.com/containerd/containerd/pkg/netns"
-	selinux "github.com/opencontainers/selinux/go-selinux"
 )
 
 func init() {
@@ -659,5 +661,10 @@ func logDebugCNIResult(ctx context.Context, sandboxID string, result *cni.Result
 		log.G(ctx).WithField("podsandboxid", sandboxID).WithError(err).Errorf("Failed to marshal CNI result: %v", err)
 		return
 	}
-	log.G(ctx).WithField("podsandboxid", sandboxID).Debugf("cni result: %s", string(cniResult))
+	rawData, err := json.Marshal(result.Raw())
+	if err != nil {
+		log.G(ctx).WithField("podsandboxid", sandboxID).WithError(err).Errorf("Failed to marshal CNI result: %v", err)
+		return
+	}
+	log.G(ctx).WithField("podsandboxid", sandboxID).Debugf("cni result: %s, raw result: %s", string(cniResult), string(rawData))
 }
