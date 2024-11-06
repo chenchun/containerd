@@ -207,7 +207,7 @@ func asynchAttach(ctx context.Context, index int, n *Network, ns *Namespace, wg 
 	defer wg.Done()
 	r, err := n.Attach(ctx, ns)
 	data, _ := json.Marshal(r)
-	logrus.Infof("rami asynchAttach index=%d r=%s err=%v", index, string(data), err)
+	logrus.Infof("rami asynchAttach index=%d ifname=%s, n.config.Name=%s, n.config.Bytes=%s, r=%s err=%v", index, n.ifName, n.config.Name, n.config.Bytes, string(data), err)
 	rc <- asynchAttachResult{index: index, res: r, err: err}
 }
 
